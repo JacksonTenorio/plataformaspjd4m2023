@@ -15,6 +15,10 @@ TagManager:
   - Ground
   - Key
   - Door
+  - P2
+  - P1
+  - Ll
+  - Lr
   layers:
   - Default
   - TransparentFX

@@ -22,8 +22,6 @@ public class EnemyController2 : MonoBehaviour
 
     private Animator _animator;
 
-    private bool _isAlive;
-
     private Collider2D _collider2D;
     
     private AudioSource _audioSource;
@@ -35,29 +33,27 @@ public class EnemyController2 : MonoBehaviour
         _collider2D = GetComponent<Collider2D>();
         _audioSource = GetComponent<AudioSource>();
 
-        _isAlive = true;
-
         _currentEnergy = maxEnergy;
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
-        if (_isAlive)
-        {
-            Patrulha();
-        }
-}
+        Patrulha();
+    }
 
     private void Patrulha()
     {
         if (direcao)
         {
-            transform.Translate(Vector3.right * moveSpeed * Time.deltaTime);
+            transform.eulerAngles = new Vector3(0f,0f,0f);
+            transform.position = Vector2.MoveTowards(transform.position, p2.transform.position, moveSpeed * Time.deltaTime);
         }
-        else
+
+        if (!direcao)
         {
-            transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
+            transform.eulerAngles = new Vector3(0f,180f,0f);
+            transform.position = Vector2.MoveTowards(transform.position, p1.transform.position, moveSpeed * Time.deltaTime);
         }
     }
 
@@ -74,8 +70,7 @@ public class EnemyController2 : MonoBehaviour
         {
             //TODO: Gerenciar morte  do inimigo
             _currentEnergy = 0;
-            //Destroy(gameObject);
-            _isAlive = false;
+            Destroy(gameObject);
             _collider2D.enabled = false;
             _animator.Play("Dead");
             _audioSource.Play();
