@@ -4,17 +4,30 @@ using UnityEngine;
 
 public class Perseguicao : StateMachineBehaviour
 {
-    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-    //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    private EnemyController2 enemy;
 
-    // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
-    //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
+    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        enemy = animator.gameObject.GetComponent<EnemyController2>();
+    }
+
+    //OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
+    override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        enemy.transform.position = Vector2.MoveTowards(enemy.transform.position, enemy.target.position, enemy.chaseSpeed * Time.deltaTime);
+        
+        if (Vector2.Distance(enemy.transform.position, enemy.limitPointA.position) < 0.1f)
+        {
+            enemy.estaSeguindo = false;
+            //enemy.isMovingTowardsPointA = true;
+        }
+        else if (Vector2.Distance(enemy.transform.position, enemy.limitPointB.position) < 0.1f)
+        {
+            enemy.estaSeguindo = false;
+            //enemy.isMovingTowardsPointA = false;
+        }
+    }
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

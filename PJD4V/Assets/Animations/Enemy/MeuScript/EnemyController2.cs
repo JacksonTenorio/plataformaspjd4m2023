@@ -6,112 +6,109 @@ using UnityEngine.Serialization;
 
 public class EnemyController2 : MonoBehaviour
 {
-    public int maxEnergy;
-    public int damage;
-    public float moveSpeed;
+    public Transform pointA;
+    public Transform pointB;
+    public Transform limitPointA;
+    public Transform limitPointB;
+    public float moveSpeed = 2f;
+    public float chaseSpeed = 4f;
+    public float detectionRange = 5f;
 
-    public GameObject p1;
-    public GameObject p2;
-    public GameObject ll;
-    public GameObject lr;
+    public Transform target;
+    public bool estaSeguindo = false;
+    public bool isMovingTowardsPointA = true;
+    public float distanceToPlayer;
 
-    public bool direcao;
-    public bool perseguicao;
+    public static EnemyController2 instance;
 
-    private int _currentEnergy;
+    public Animator anim;
 
-    private Animator _animator;
+    private void Awake()
+    {
+        instance = this;
+    }
 
-    private Collider2D _collider2D;
-    
-    private AudioSource _audioSource;
-    
-    // Start is called before the first frame update
     void Start()
     {
-        _animator = GetComponent<Animator>();
-        _collider2D = GetComponent<Collider2D>();
-        _audioSource = GetComponent<AudioSource>();
-
-        _currentEnergy = maxEnergy;
+        target = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
-    // Update is called once per frame
     public void Update()
     {
-        Patrulha();
-    }
-
-    private void Patrulha()
-    {
-        if (direcao)
-        {
-            transform.eulerAngles = new Vector3(0f,0f,0f);
-            transform.position = Vector2.MoveTowards(transform.position, p2.transform.position, moveSpeed * Time.deltaTime);
-        }
-
-        if (!direcao)
-        {
-            transform.eulerAngles = new Vector3(0f,180f,0f);
-            transform.position = Vector2.MoveTowards(transform.position, p1.transform.position, moveSpeed * Time.deltaTime);
-        }
-    }
-
-    private void Perseguicao()
-    {
+        distanceToPlayer = Vector2.Distance(transform.position, target.position);
         
+        anim.SetFloat("distanciaPlayer", distanceToPlayer);
+        
+        float valorAB = Vector2.Distance(transform.position, (pointB.position + pointA.position)/2);
+        anim.SetFloat("distanciaMeio", valorAB);
     }
 
-    public void TakeEnergy(int damage)
+    public void AnimUpdate()
     {
-        _currentEnergy -= damage;
-
-        if (_currentEnergy <= 0)
+        if (distanceToPlayer < detectionRange)
         {
-            //TODO: Gerenciar morte  do inimigo
-            _currentEnergy = 0;
-            Destroy(gameObject);
-            _collider2D.enabled = false;
-            _animator.Play("Dead");
-            _audioSource.Play();
+            estaSeguindo = true;
+        }
+        else
+        {
+            estaSeguindo = false;
         }
 
-        if (_currentEnergy > maxEnergy) _currentEnergy = maxEnergy;
-    }
-
-    private void OnTriggerEnter2D(Collider2D col)
-    {
-        if (col.gameObject.CompareTag("P1"))
+        if (estaSeguindo)
         {
-            direcao = !direcao;
+            if (transform.position.x > target.position.x)
+            {
+                transform.eulerAngles = (Vector3)new Vector2(0f, 180f);
+            }
+            else
+            {
+                transform.eulerAngles = (Vector3)new Vector2(0f, 0f);
+            }
+            SeguePlayer();
         }
-        if (col.gameObject.CompareTag("P2"))
+        else
         {
-            direcao = !direcao;
-        }
-        if (col.gameObject.CompareTag("Lr"))
-        {
-            perseguicao = false;
-        }
-        if (col.gameObject.CompareTag("Ll"))
-        {
-            perseguicao = false;
+            Patrula();
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D col)
+    public void Patrula()
     {
-        if (col.gameObject.CompareTag("Player"))
+        if (isMovingTowardsPointA)
         {
-            col.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
+            transform.eulerAngles = (Vector3)new Vector2(0f, 0f);
+            transform.position = Vector2.MoveTowards(transform.position, pointA.position, moveSpeed * Time.deltaTime);
+
+            if (Vector2.Distance(transform.position, pointA.position) < 0.1f)
+            {
+                isMovingTowardsPointA = false;
+            }
+        }
+        else
+        {
+            transform.eulerAngles = (Vector3)new Vector2(0f, 180f);
+            transform.position = Vector2.MoveTowards(transform.position, pointB.position, moveSpeed * Time.deltaTime);
+
+            if (Vector2.Distance(transform.position, pointB.position) < 0.1f)
+            {
+                isMovingTowardsPointA = true;
+            }
         }
     }
-    
-    private void OnCollisionStay2D(Collision2D other)
+
+    public void SeguePlayer()
     {
-        if (other.gameObject.CompareTag("Player"))
+        transform.position = Vector2.MoveTowards(transform.position, target.position, chaseSpeed * Time.deltaTime);
+        
+        if (Vector2.Distance(transform.position, limitPointA.position) < 0.1f)
         {
-            other.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
+            estaSeguindo = false;
+            isMovingTowardsPointA = true;
+        }
+        else if (Vector2.Distance(transform.position, limitPointB.position) < 0.1f)
+        {
+            estaSeguindo = false;
+            isMovingTowardsPointA = false;
         }
     }
 }

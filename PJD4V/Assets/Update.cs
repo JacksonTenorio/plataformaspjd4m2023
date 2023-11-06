@@ -2,21 +2,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Retorno : StateMachineBehaviour
+public class Update : StateMachineBehaviour
 {
-    private EnemyController2 enemy;
+    public Transform pointA;
+    public Transform pointB;
+    public Transform limitPointA;
+    public Transform limitPointB;
+    public float moveSpeed = 2f;
+    public float chaseSpeed = 4f;
+    public float detectionRange = 5f;
+
+    private Transform target;
+    private bool estaSeguindo = false;
+    private bool isMovingTowardsPointA = true;
+
+    public static EnemyController2 instance;
     
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    {
-        enemy = animator.gameObject.GetComponent<EnemyController2>();
-    }
+    //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    //{
+    //    
+    //}
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
     override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        Vector2 valorAB = (enemy.pointB.position + enemy.pointA.position)/2;
-        enemy.transform.position = Vector2.MoveTowards(enemy.transform.position, valorAB, enemy.moveSpeed/2 * Time.deltaTime);
+        EnemyController2.instance.AnimUpdate();
     }
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
